@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -15,8 +17,11 @@ type Details struct {
 }
 
 func displayDetails(res http.ResponseWriter, req *http.Request) {
+	host, _ := os.Hostname()
+
 	var details = map[string]*Details{
-		"01": &Details{Name: "fralix", NodeName: "node01"},
+		//	"01": &Details{Name: "fralix", NodeName: "node01"},
+		"01": &Details{Name: os.Getenv("USER"), NodeName: host},
 	}
 	res.Header().Set("Content-Type", "application/json")
 	outgoingJSON, error := json.Marshal(details)
@@ -31,5 +36,7 @@ func displayDetails(res http.ResponseWriter, req *http.Request) {
 func HelloService() {
 	msgrouter := mux.NewRouter()
 	msgrouter.HandleFunc("/details", displayDetails).Methods("GET")
-	http.ListenAndServe(":9090", msgrouter)
+	// http.ListenAndServe(":9090", msgrouter)
+	http.ListenAndServe(":9090", handlers.CORS()(msgrouter))
+
 }
